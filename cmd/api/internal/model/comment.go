@@ -1,9 +1,10 @@
 package model
 
+import "gorm.io/gorm"
+
 type Comment struct {
-	ID        int
-	Content   string
-	User_id   string
-	Post_id   string
-	Create_at string
+	gorm.Model
+	Content string
+	User_id string
+	Post_id string
 }
