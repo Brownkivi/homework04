@@ -1,7 +1,6 @@
 package router
 
 import (
-	"BlodWeb/internal/api/handler"
 	"BlodWeb/internal/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -9,19 +8,15 @@ import (
 
 func InitRouter() *gin.Engine {
 	r := gin.Default()
-
-	// 无需登录路由
-	public := r.Group("/api")
-	{
-		public.POST("/login", handler.Login)
-	}
-
-	// 需要JWT认证路由
-	auth := r.Group("/api")
-	auth.Use(middleware.JWTAuth())
-	{
-		auth.GET("/user/info", handler.GetUserInfo)
-	}
+	// api
+	api := r.Group("/api")
+	//全局jwt
+	api.Use(middleware.JWTAuth())
+	//全局zap日志
+	api.Use(middleware.GinLogger())
+	//统一异常处理
+	api.Use(middleware.RecoverMiddleware())
+	UserRoutes(api)
 
 	return r
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"BlodWeb/configs"
 	"BlodWeb/pkg/jwt"
 	"net/http"
 
@@ -10,6 +11,14 @@ import (
 // JWT鉴权中间件
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		//白名单放行
+		path := c.Request.URL.Path
+		if isWhiteList(path) {
+			c.Next()
+			return
+		}
+
 		// 1. 从Header获取Token: Authorization: Bearer xxx
 		authHeader := c.GetHeader("Authorization")
 		if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
@@ -39,4 +48,14 @@ func JWTAuth() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// 判断当前路径是否在白名单
+func isWhiteList(path string) bool {
+	for _, p := range configs.WhiteList {
+		if path == p {
+			return true
+		}
+	}
+	return false
 }
