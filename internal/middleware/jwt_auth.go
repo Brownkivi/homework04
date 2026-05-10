@@ -2,7 +2,8 @@ package middleware
 
 import (
 	"BlodWeb/configs"
-	"BlodWeb/pkg/jwt"
+	"BlodWeb/utils/jwt"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"

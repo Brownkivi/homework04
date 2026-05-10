@@ -4,8 +4,9 @@ import (
 	"BlodWeb/configs"
 	"BlodWeb/internal/dao"
 	"BlodWeb/internal/model"
-	"BlodWeb/pkg/jwt"
+
 	"BlodWeb/utils/encrypt"
+	"BlodWeb/utils/jwt"
 	"net/http"
 	"strconv"
 
@@ -25,13 +26,6 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "参数错误"})
 		return
 	}
-	//加密密码
-	password, err := encrypt.Encrypt(req.Password, configs.Key)
-	if err != nil {
-		configs.Logger.Error("加密失败", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "加密失败"})
-		return
-	}
 
 	var user model.User
 	if err := dao.SelectByUsername(&user, req.Username); err != nil {
@@ -39,8 +33,17 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		return
 	}
+
+	//解密密码
+	password, err := encrypt.Decrypt(user.Password, configs.Key)
+	if err != nil {
+		configs.Logger.Error("加密失败", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "加密失败"})
+		return
+	}
+
 	//密码错误
-	if password != user.Password {
+	if password != req.Password {
 		configs.Logger.Error("密码错误", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
 		return
@@ -109,8 +112,12 @@ func ModifyPassword(c *gin.Context) {
 	// 从上下文获取登录用户信息
 	userID, _ := c.Get("userID")
 	var req struct {
-		oldPassword string `json:"oldPassword"`
+		OldPassword string `json:"oldPassword"`
 		Password    string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "参数错误"})
+		return
 	}
 	//当前登录用户旧密码
 	var password string
@@ -118,13 +125,13 @@ func ModifyPassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "修改密码失败"})
 		return
 	}
-	var encodeStr string
-	encodeStr, err := encrypt.Encrypt(req.oldPassword, configs.Key)
+	var decodeStr string
+	decodeStr, err := encrypt.Decrypt(password, configs.Key)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "加密失败"})
 		return
 	}
-	if encodeStr != password {
+	if decodeStr != req.OldPassword {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "密码错误"})
 		return
 	}
