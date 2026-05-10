@@ -3,6 +3,8 @@ package config
 import (
 	"BlodWeb/configs"
 	"BlodWeb/internal/model"
+	"os"
+	"path/filepath"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -10,7 +12,17 @@ import (
 )
 
 func InitDB() {
-	dbPath := "D:/Softstore/Sqlite/sqliteData/Blog.db"
+	dbPath := "D:/Softstore/Sqlite/Blog.db"
+
+	dbDir := filepath.Dir(dbPath)
+	// 判断目录是否存在
+	if _, err := os.Stat(dbDir); os.IsNotExist(err) {
+		// 不存在就创建目录（包括多级目录）
+		err = os.MkdirAll(dbDir, 0755)
+		if err != nil {
+			panic("创建数据库目录失败：" + err.Error())
+		}
+	}
 
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
