@@ -13,6 +13,6 @@ func CreateComment(comment *model.Comment) error {
 
 func GetAllComment(id int64) ([]model.Comment, error) {
 	var comments []model.Comment
-	err := configs.DB.Where("id = ?", id).Find(&comments).Error
+	err := configs.DB.Where("post_id = ?", id).Find(&comments).Error
 	return comments, err
 }

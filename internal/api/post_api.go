@@ -46,10 +46,12 @@ func GetPostById(c *gin.Context) {
 	id, err := strconv.ParseInt(post.Id, 10, 64)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, "参数错误")
+		return
 	}
 
 	if res, err := dao.GetPostById(id); err != nil {
 		response.Success(c, res)
+		return
 	}
 	response.Error(c, http.StatusBadRequest, "获取失败")
 }

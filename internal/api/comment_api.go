@@ -5,6 +5,7 @@ import (
 	"BlodWeb/internal/model"
 	"BlodWeb/utils/response"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,13 +35,14 @@ func CreateComment(c *gin.Context) {
 
 func GetAllComment(c *gin.Context) {
 	var param struct {
-		PostId int64 `json:"postId"`
+		PostId string `json:"postId"`
 	}
 	if err := c.ShouldBindJSON(&param); err != nil {
 		response.Error(c, http.StatusBadRequest, "参数错误")
 		return
 	}
-	res, err := dao.GetAllComment(param.PostId)
+	id, err := strconv.ParseInt(param.PostId, 10, 64)
+	res, err := dao.GetAllComment(id)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, "获取评论失败")
 	}

@@ -17,6 +17,8 @@ func InitRouter() *gin.Engine {
 	//统一异常处理
 	api.Use(middleware.RecoverMiddleware())
 	UserRoutes(api)
+	PostRoutes(api)
+	CommentRoutes(api)
 
 	return r
 }
